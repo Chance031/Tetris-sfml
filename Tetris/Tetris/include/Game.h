@@ -19,6 +19,7 @@ public:
 private:
     void ProcessEvents();
     void HandleKeyPressed(sf::Keyboard::Key key);
+    void HandleKeyReleased(sf::Keyboard::Key key);
     void HandleTitleInput(sf::Keyboard::Key key);
     void HandlePlayingInput(sf::Keyboard::Key key);
     void HandlePausedInput(sf::Keyboard::Key key);
@@ -41,6 +42,12 @@ private:
     void StartLockDelay();
     void ResetLockDelay();
     void RefreshLockDelayAfterSuccessfulMove();
+    void UpdateContinuousInput();
+    void BeginHorizontalInput(int direction);
+    void EndHorizontalInput(int direction);
+    void BeginSoftDropInput();
+    void EndSoftDropInput();
+    int GetActiveHorizontalDirection() const;
     bool IsCurrentPieceTouchingGround() const;
     bool DetectTSpin() const;
     void HardDropCurrentPiece();
@@ -64,6 +71,9 @@ private:
     static constexpr int MinFallIntervalMs = 100;
     static constexpr int LockDelayMs = 500;
     static constexpr int MaxLockResetCount = 15;
+    static constexpr int HorizontalAutoShiftDelayMs = 140;
+    static constexpr int HorizontalAutoRepeatMs = 45;
+    static constexpr int SoftDropRepeatMs = 35;
     static constexpr int SoftDropScorePerCell = 1;
     static constexpr int HardDropScorePerCell = 2;
     static constexpr int ComboScorePerStep = 50;
@@ -92,6 +102,11 @@ private:
     bool m_hasHoldPiece = false;
     bool m_canHold = true;
     bool m_isBackToBackActive = false;
+    bool m_leftPressed = false;
+    bool m_rightPressed = false;
+    bool m_softDropPressed = false;
+    bool m_hasReachedHorizontalRepeat = false;
+    int m_lastHorizontalDirection = 0;
 
     int m_score = 0;
     int m_level = 1;
@@ -103,6 +118,8 @@ private:
 
     sf::Clock m_fallClock;
     sf::Clock m_lockClock;
+    sf::Clock m_horizontalInputClock;
+    sf::Clock m_softDropClock;
     sf::Time m_fallInterval;
 
     std::mt19937 m_randomEngine;

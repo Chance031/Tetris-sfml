@@ -74,6 +74,9 @@ void Game::ProcessEvents()
 
         if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>())
             HandleKeyPressed(keyPressed->code);
+
+        if (const auto* keyReleased = event->getIf<sf::Event::KeyReleased>())
+            HandleKeyReleased(keyReleased->code);
     }
 }
 
@@ -92,6 +95,30 @@ void Game::HandleKeyPressed(sf::Keyboard::Key key)
         break;
     case GameState::GameOver:
         HandleGameOverInput(key);
+        break;
+    }
+}
+
+void Game::HandleKeyReleased(sf::Keyboard::Key key)
+{
+    if (m_state != GameState::Playing)
+        return;
+
+    switch (key)
+    {
+    case sf::Keyboard::Key::Left:
+    case sf::Keyboard::Key::A:
+        EndHorizontalInput(-1);
+        break;
+    case sf::Keyboard::Key::Right:
+    case sf::Keyboard::Key::D:
+        EndHorizontalInput(1);
+        break;
+    case sf::Keyboard::Key::Down:
+    case sf::Keyboard::Key::S:
+        EndSoftDropInput();
+        break;
+    default:
         break;
     }
 }
@@ -123,16 +150,19 @@ void Game::HandlePlayingInput(sf::Keyboard::Key key)
     {
     case sf::Keyboard::Key::Left:
     case sf::Keyboard::Key::A:
+        BeginHorizontalInput(-1);
         if (TryMoveCurrentPiece(-1, 0, false))
             m_lastMoveWasRotation = false;
         break;
     case sf::Keyboard::Key::Right:
     case sf::Keyboard::Key::D:
+        BeginHorizontalInput(1);
         if (TryMoveCurrentPiece(1, 0, false))
             m_lastMoveWasRotation = false;
         break;
     case sf::Keyboard::Key::Down:
     case sf::Keyboard::Key::S:
+        BeginSoftDropInput();
         if (TryMoveCurrentPiece(0, 1, true))
             m_score += SoftDropScorePerCell;
         break;
@@ -203,12 +233,19 @@ void Game::StartNewSession()
     m_hasHoldPiece = false;
     m_canHold = true;
     m_lockResetCount = 0;
+    m_leftPressed = false;
+    m_rightPressed = false;
+    m_softDropPressed = false;
+    m_hasReachedHorizontalRepeat = false;
+    m_lastHorizontalDirection = 0;
     m_pieceBag.clear();
     m_state = GameState::Playing;
 
     m_fallInterval = sf::milliseconds(InitialFallIntervalMs);
     m_fallClock.restart();
     m_lockClock.restart();
+    m_horizontalInputClock.restart();
+    m_softDropClock.restart();
 
     m_nextPiece = Tetromino(CreateRandomTetrominoType());
     SpawnNextPiece();
@@ -219,6 +256,8 @@ void Game::Update()
 {
     if (m_state != GameState::Playing)
         return;
+
+    UpdateContinuousInput();
 
     if (m_isLockRequired)
     {
@@ -497,6 +536,95 @@ void Game::RefreshLockDelayAfterSuccessfulMove()
 
     ++m_lockResetCount;
     m_lockClock.restart();
+}
+
+void Game::UpdateContinuousInput()
+{
+    const int horizontalDirection = GetActiveHorizontalDirection();
+    if (horizontalDirection == 0)
+    {
+        m_hasReachedHorizontalRepeat = false;
+    }
+    else
+    {
+        const sf::Time horizontalElapsed = m_horizontalInputClock.getElapsedTime();
+        const sf::Time repeatDelay = m_hasReachedHorizontalRepeat
+            ? sf::milliseconds(HorizontalAutoRepeatMs)
+            : sf::milliseconds(HorizontalAutoShiftDelayMs);
+
+        if (horizontalElapsed >= repeatDelay)
+        {
+            if (TryMoveCurrentPiece(horizontalDirection, 0, false))
+                m_lastMoveWasRotation = false;
+
+            m_hasReachedHorizontalRepeat = true;
+            m_horizontalInputClock.restart();
+            MarkTitleDirty();
+        }
+    }
+
+    if (!m_softDropPressed)
+        return;
+
+    if (m_softDropClock.getElapsedTime() < sf::milliseconds(SoftDropRepeatMs))
+        return;
+
+    if (TryMoveCurrentPiece(0, 1, true))
+        m_score += SoftDropScorePerCell;
+
+    m_softDropClock.restart();
+    MarkTitleDirty();
+}
+
+void Game::BeginHorizontalInput(int direction)
+{
+    if (direction < 0)
+        m_leftPressed = true;
+    else if (direction > 0)
+        m_rightPressed = true;
+
+    m_lastHorizontalDirection = direction;
+    m_hasReachedHorizontalRepeat = false;
+    m_horizontalInputClock.restart();
+}
+
+void Game::EndHorizontalInput(int direction)
+{
+    if (direction < 0)
+        m_leftPressed = false;
+    else if (direction > 0)
+        m_rightPressed = false;
+
+    const int activeDirection = GetActiveHorizontalDirection();
+    m_lastHorizontalDirection = activeDirection;
+    m_hasReachedHorizontalRepeat = false;
+    m_horizontalInputClock.restart();
+}
+
+void Game::BeginSoftDropInput()
+{
+    m_softDropPressed = true;
+    m_softDropClock.restart();
+}
+
+void Game::EndSoftDropInput()
+{
+    m_softDropPressed = false;
+    m_softDropClock.restart();
+}
+
+int Game::GetActiveHorizontalDirection() const
+{
+    if (m_leftPressed && m_rightPressed)
+        return m_lastHorizontalDirection;
+
+    if (m_leftPressed)
+        return -1;
+
+    if (m_rightPressed)
+        return 1;
+
+    return 0;
 }
 
 bool Game::IsCurrentPieceTouchingGround() const
