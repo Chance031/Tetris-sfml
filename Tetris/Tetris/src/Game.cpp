@@ -972,6 +972,9 @@ void Game::DrawPanel()
 
     DrawTextLine("COMBO", {632.0f, 328.0f}, 16, labelColor);
     DrawTextLine(std::to_string(std::max(m_combo, 0)), {760.0f, 326.0f}, 18, valueColor);
+    DrawTextLine("B2B", {632.0f, 350.0f}, 16, labelColor);
+    DrawTextLine(m_isBackToBackActive ? "ACTIVE" : "READY", {724.0f, 348.0f}, 18,
+        m_isBackToBackActive ? accentColor : hintColor);
 
     card.setPosition({460.0f, 410.0f});
     card.setSize({374.0f, 122.0f});
@@ -1056,6 +1059,7 @@ void Game::DrawOverlay()
         DrawCenteredTextLine("Falling blocks, clean timing.", 480.0f, 300.0f, 18, sf::Color(208, 214, 224));
         DrawMenuOption("Start", 480.0f, 350.0f, m_titleMenuSelection == 0);
         DrawMenuOption("Quit", 480.0f, 388.0f, m_titleMenuSelection == 1);
+        DrawCenteredTextLine("Up/Down : Move   Enter : Confirm", 480.0f, 450.0f, 16, sf::Color(190, 196, 208));
     }
     else if (m_state == GameState::Paused)
     {
@@ -1065,6 +1069,7 @@ void Game::DrawOverlay()
         DrawMenuOption("Resume", 480.0f, 360.0f, m_pauseMenuSelection == 0);
         DrawMenuOption("Restart", 480.0f, 398.0f, m_pauseMenuSelection == 1);
         DrawMenuOption("Quit", 480.0f, 436.0f, m_pauseMenuSelection == 2);
+        DrawCenteredTextLine("Up/Down : Move   Enter : Confirm", 480.0f, 470.0f, 16, sf::Color(190, 196, 208));
     }
     else if (m_state == GameState::GameOver)
     {
@@ -1074,6 +1079,7 @@ void Game::DrawOverlay()
         DrawMenuOption("Restart", 480.0f, 382.0f, m_gameOverMenuSelection == 0);
         DrawMenuOption("Back to Title", 480.0f, 420.0f, m_gameOverMenuSelection == 1);
         DrawMenuOption("Quit", 480.0f, 458.0f, m_gameOverMenuSelection == 2);
+        DrawCenteredTextLine("Up/Down : Move   Enter : Confirm", 480.0f, 486.0f, 16, sf::Color(190, 196, 208));
     }
 }
 
