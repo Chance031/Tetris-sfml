@@ -833,7 +833,11 @@ void Game::DrawTextLine(std::string_view text, sf::Vector2f position, unsigned i
 
 void Game::LoadUIFont()
 {
-    const std::array<std::filesystem::path, 4> candidates{
+    const std::array<std::filesystem::path, 7> candidates{
+        // Prefer bundled project fonts so the UI looks the same on every PC.
+        std::filesystem::path("asset/fonts/Hatmuri9.ttf"),
+        std::filesystem::path("../asset/fonts/Hatmuri9.ttf"),
+        std::filesystem::path("../../asset/fonts/Hatmuri9.ttf"),
         std::filesystem::path("assets/fonts/malgun.ttf"),
         std::filesystem::path("assets/fonts/arial.ttf"),
         std::filesystem::path("C:/Windows/Fonts/malgun.ttf"),
