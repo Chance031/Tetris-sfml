@@ -171,7 +171,16 @@ if exist "$(SFMLDir)\bin\sfml-system-3.dll" copy /Y "$(SFMLDir)\bin\sfml-system-
   </ItemDefinitionGroup>
 
   <ItemGroup>
+    <ClCompile Include="src\Board.cpp" />
+    <ClCompile Include="src\Game.cpp" />
+    <ClCompile Include="src\Tetromino.cpp" />
     <ClCompile Include="src\main.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\Board.h" />
+    <ClInclude Include="include\Game.h" />
+    <ClInclude Include="include\Tetromino.h" />
+    <ClInclude Include="include\Types.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
