@@ -510,15 +510,11 @@ bool Game::TryRotateCurrentPiece(RotationDirection direction)
 {
     const int oldRotationIndex = m_currentPiece.GetRotationIndex();
     const auto kicks = GetSrsKicks(m_currentPiece.GetType(), oldRotationIndex, direction);
-    const std::array<Point, 8> fallbackKicks{
+    const std::array<Point, 4> horizontalWallKicks{
         Point{-1, 0},
         Point{1, 0},
         Point{-2, 0},
-        Point{2, 0},
-        Point{0, -1},
-        Point{-1, -1},
-        Point{1, -1},
-        Point{0, -2}
+        Point{2, 0}
     };
 
     if (direction == RotationDirection::Clockwise)
@@ -540,10 +536,10 @@ bool Game::TryRotateCurrentPiece(RotationDirection direction)
         m_currentPiece.Move(-kick.x, -kick.y);
     }
 
-    // The current SFML port uses simple 4x4 local shape data rather than a full
-    // guideline pivot model, so pure SRS offsets can still miss valid wall kicks.
-    // Try a small set of practical fallback offsets to keep near-wall rotation working.
-    for (const Point& kick : fallbackKicks)
+    // The current piece definitions are still 4x4 grid rotations rather than a
+    // full pivot-based guideline model, so pure SRS can miss simple wall-adjacent
+    // saves. Keep only a minimal horizontal fallback for side-wall cases.
+    for (const Point& kick : horizontalWallKicks)
     {
         m_currentPiece.Move(kick.x, kick.y);
 
