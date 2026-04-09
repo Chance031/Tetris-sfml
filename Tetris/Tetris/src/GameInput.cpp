@@ -104,7 +104,7 @@ void Game::HandlePlayingInput(sf::Keyboard::Key key)
     case sf::Keyboard::Key::S:
         BeginSoftDropInput();
         if (TryMoveCurrentPiece(0, 1, true))
-            m_score += SoftDropScorePerCell;
+            m_pendingDropScore += SoftDropScorePerCell;
         break;
     case sf::Keyboard::Key::Z:
         TryRotateCurrentPiece(RotationDirection::CounterClockwise);
@@ -220,4 +220,3 @@ void Game::ActivateGameOverMenuSelection()
 
     m_window.close();
 }
-

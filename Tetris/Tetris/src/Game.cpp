@@ -1,4 +1,4 @@
-﻿#include "Game.h"
+#include "Game.h"
 
 #include <algorithm>
 #include <array>
@@ -65,6 +65,7 @@ void Game::StartNewSession()
     m_hasHoldPiece = false;
     m_canHold = true;
     m_lockResetCount = 0;
+    m_pendingDropScore = 0;
     m_titleMenuSelection = 0;
     m_pauseMenuSelection = 0;
     m_gameOverMenuSelection = 0;
@@ -147,6 +148,7 @@ void Game::SpawnNextPiece()
     m_hasTouchedGround = false;
     m_lockResetCount = 0;
     m_lastMoveWasRotation = false;
+    m_pendingDropScore = 0;
 
     m_nextPiece = Tetromino(CreateRandomTetrominoType());
     MarkTitleDirty();
@@ -155,6 +157,8 @@ void Game::SpawnNextPiece()
 void Game::ProcessLockAndResolve()
 {
     const bool isTSpin = DetectTSpin();
+    m_score += m_pendingDropScore;
+    m_pendingDropScore = 0;
     m_board.LockPiece(m_currentPiece);
 
     const int clearedLines = m_board.ClearLines();
@@ -404,7 +408,7 @@ void Game::UpdateContinuousInput()
         return;
 
     if (TryMoveCurrentPiece(0, 1, true))
-        m_score += SoftDropScorePerCell;
+        m_pendingDropScore += SoftDropScorePerCell;
 
     m_softDropClock.restart();
     MarkTitleDirty();
@@ -537,7 +541,7 @@ void Game::HardDropCurrentPiece()
     while (TryMoveCurrentPiece(0, 1, false))
         ++droppedCells;
 
-    m_score += droppedCells * HardDropScorePerCell;
+    m_pendingDropScore += droppedCells * HardDropScorePerCell;
     m_isLockRequired = true;
     MarkTitleDirty();
 }
@@ -566,6 +570,7 @@ void Game::HoldCurrentPiece()
     m_canHold = false;
     m_isLockRequired = false;
     m_lastMoveWasRotation = false;
+    m_pendingDropScore = 0;
     ResetLockDelay();
     m_fallClock.restart();
 

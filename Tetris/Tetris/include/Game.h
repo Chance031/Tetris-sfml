@@ -121,6 +121,7 @@ private:
     int m_totalLines = 0;
     int m_combo = -1;
     int m_lockResetCount = 0;
+    int m_pendingDropScore = 0;
     int m_titleMenuSelection = 0;
     int m_pauseMenuSelection = 0;
     int m_gameOverMenuSelection = 0;
