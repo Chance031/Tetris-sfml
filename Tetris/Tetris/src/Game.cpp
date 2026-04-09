@@ -7,6 +7,16 @@
 
 namespace
 {
+    constexpr sf::Color BackgroundColor(18, 18, 24);
+    constexpr sf::Color BoardBackgroundColor(26, 30, 38);
+    constexpr sf::Color BoardOutlineColor(70, 76, 88);
+    constexpr sf::Color EmptyCellColor(33, 37, 46);
+    constexpr sf::Color PanelColor(28, 32, 40);
+    constexpr sf::Color PanelOutlineColor(80, 86, 98);
+    constexpr sf::Color MeterTrackColor(40, 44, 54);
+    constexpr sf::Color ComboMeterColor(255, 176, 64);
+    constexpr sf::Color LevelMeterColor(96, 200, 128);
+
     sf::Color GetPieceColor(TetrominoType type, std::uint8_t alpha = 255)
     {
         switch (type)
@@ -34,6 +44,7 @@ Game::Game()
     , m_randomEngine(std::random_device{}())
 {
     m_window.setFramerateLimit(60);
+    m_pieceBag.reserve(7);
 }
 
 void Game::Run()
@@ -45,6 +56,7 @@ void Game::Run()
         ProcessEvents();
         Update();
         Render();
+        UpdateWindowTitle();
     }
 }
 
@@ -101,7 +113,7 @@ void Game::HandlePlayingInput(sf::Keyboard::Key key)
     if (key == sf::Keyboard::Key::P)
     {
         m_state = GameState::Paused;
-        UpdateWindowTitle();
+        MarkTitleDirty();
         return;
     }
 
@@ -142,7 +154,7 @@ void Game::HandlePlayingInput(sf::Keyboard::Key key)
         break;
     }
 
-    UpdateWindowTitle();
+    MarkTitleDirty();
 }
 
 void Game::HandlePausedInput(sf::Keyboard::Key key)
@@ -161,7 +173,7 @@ void Game::HandlePausedInput(sf::Keyboard::Key key)
         return;
     }
 
-    UpdateWindowTitle();
+    MarkTitleDirty();
 }
 
 void Game::HandleGameOverInput(sf::Keyboard::Key key)
@@ -171,7 +183,7 @@ void Game::HandleGameOverInput(sf::Keyboard::Key key)
     else if (key == sf::Keyboard::Key::Escape)
         m_window.close();
 
-    UpdateWindowTitle();
+    MarkTitleDirty();
 }
 
 void Game::StartNewSession()
@@ -198,7 +210,7 @@ void Game::StartNewSession()
 
     m_nextPiece = Tetromino(CreateRandomTetrominoType());
     SpawnNextPiece();
-    UpdateWindowTitle();
+    MarkTitleDirty();
 }
 
 void Game::Update()
@@ -228,7 +240,7 @@ void Game::Update()
 
 void Game::Render()
 {
-    m_window.clear(sf::Color(18, 18, 24));
+    m_window.clear(BackgroundColor);
     DrawBoard();
     DrawPanel();
     DrawOverlay();
@@ -237,6 +249,9 @@ void Game::Render()
 
 void Game::UpdateWindowTitle()
 {
+    if (!m_isWindowTitleDirty)
+        return;
+
     std::ostringstream title;
     title << "Tetris SFML | ";
 
@@ -259,6 +274,7 @@ void Game::UpdateWindowTitle()
     }
 
     m_window.setTitle(title.str());
+    m_isWindowTitleDirty = false;
 }
 
 int Game::CalculateScore(int clearedLines) const
@@ -300,6 +316,7 @@ void Game::SpawnNextPiece()
     m_lastMoveWasRotation = false;
 
     m_nextPiece = Tetromino(CreateRandomTetrominoType());
+    MarkTitleDirty();
 }
 
 void Game::ProcessLockAndResolve()
@@ -362,7 +379,7 @@ void Game::ProcessLockAndResolve()
     if (!m_board.CanPlace(m_currentPiece))
         m_state = GameState::GameOver;
 
-    UpdateWindowTitle();
+    MarkTitleDirty();
 }
 
 bool Game::TryMoveCurrentPiece(int dx, int dy, bool lockOnFail)
@@ -387,6 +404,16 @@ bool Game::TryRotateCurrentPiece(RotationDirection direction)
 {
     const int oldRotationIndex = m_currentPiece.GetRotationIndex();
     const auto kicks = GetSrsKicks(m_currentPiece.GetType(), oldRotationIndex, direction);
+    const std::array<Point, 8> fallbackKicks{
+        Point{-1, 0},
+        Point{1, 0},
+        Point{-2, 0},
+        Point{2, 0},
+        Point{0, -1},
+        Point{-1, -1},
+        Point{1, -1},
+        Point{0, -2}
+    };
 
     if (direction == RotationDirection::Clockwise)
         m_currentPiece.RotateCW();
@@ -394,6 +421,23 @@ bool Game::TryRotateCurrentPiece(RotationDirection direction)
         m_currentPiece.RotateCCW();
 
     for (const Point& kick : kicks)
+    {
+        m_currentPiece.Move(kick.x, kick.y);
+
+        if (m_board.CanPlace(m_currentPiece))
+        {
+            RefreshLockDelayAfterSuccessfulMove();
+            m_lastMoveWasRotation = true;
+            return true;
+        }
+
+        m_currentPiece.Move(-kick.x, -kick.y);
+    }
+
+    // The current SFML port uses simple 4x4 local shape data rather than a full
+    // guideline pivot model, so pure SRS offsets can still miss valid wall kicks.
+    // Try a small set of practical fallback offsets to keep near-wall rotation working.
+    for (const Point& kick : fallbackKicks)
     {
         m_currentPiece.Move(kick.x, kick.y);
 
@@ -494,6 +538,7 @@ void Game::HardDropCurrentPiece()
 
     m_score += droppedCells * HardDropScorePerCell;
     m_isLockRequired = true;
+    MarkTitleDirty();
 }
 
 void Game::HoldCurrentPiece()
@@ -525,6 +570,8 @@ void Game::HoldCurrentPiece()
 
     if (!m_board.CanPlace(m_currentPiece))
         m_state = GameState::GameOver;
+
+    MarkTitleDirty();
 }
 
 TetrominoType Game::CreateRandomTetrominoType()
@@ -574,18 +621,19 @@ void Game::DrawBoard()
 {
     sf::RectangleShape boardBackground({Board::Width * BlockSize, Board::Height * BlockSize});
     boardBackground.setPosition({BoardOffsetX, BoardOffsetY});
-    boardBackground.setFillColor(sf::Color(26, 30, 38));
-    boardBackground.setOutlineColor(sf::Color(70, 76, 88));
+    boardBackground.setFillColor(BoardBackgroundColor);
+    boardBackground.setOutlineColor(BoardOutlineColor);
     boardBackground.setOutlineThickness(2.0f);
     m_window.draw(boardBackground);
+
+    sf::RectangleShape cell({BlockSize - 2.0f, BlockSize - 2.0f});
 
     for (int y = 0; y < Board::Height; ++y)
     {
         for (int x = 0; x < Board::Width; ++x)
         {
-            sf::RectangleShape cell({BlockSize - 2.0f, BlockSize - 2.0f});
             cell.setPosition({BoardOffsetX + x * BlockSize + 1.0f, BoardOffsetY + y * BlockSize + 1.0f});
-            cell.setFillColor(sf::Color(33, 37, 46));
+            cell.setFillColor(EmptyCellColor);
             m_window.draw(cell);
 
             const std::uint8_t cellValue = m_board.GetCellValue({x, y});
@@ -603,11 +651,12 @@ void Game::DrawBoard()
 
 void Game::DrawPiece(const Tetromino& tetromino, std::uint8_t alpha, bool useBoardOffset)
 {
+    sf::RectangleShape cell({BlockSize - 2.0f, BlockSize - 2.0f});
+    const float offsetX = useBoardOffset ? BoardOffsetX : 0.0f;
+    const float offsetY = useBoardOffset ? BoardOffsetY : 0.0f;
+
     for (const Point& block : tetromino.GetBlockLocations())
     {
-        sf::RectangleShape cell({BlockSize - 2.0f, BlockSize - 2.0f});
-        const float offsetX = useBoardOffset ? BoardOffsetX : 0.0f;
-        const float offsetY = useBoardOffset ? BoardOffsetY : 0.0f;
         cell.setPosition({offsetX + block.x * BlockSize + 1.0f, offsetY + block.y * BlockSize + 1.0f});
         cell.setFillColor(GetPieceColor(tetromino.GetType(), alpha));
         m_window.draw(cell);
@@ -619,13 +668,14 @@ void Game::DrawMiniPiece(TetrominoType type, sf::Vector2f origin)
     Tetromino preview(type);
     preview.SetPosition(0, 0);
     preview.SetRotation(0);
+    const auto previewBlocks = preview.GetBlockLocations();
 
     float minX = 10.0f;
     float maxX = -10.0f;
     float minY = 10.0f;
     float maxY = -10.0f;
 
-    for (const Point& block : preview.GetBlockLocations())
+    for (const Point& block : previewBlocks)
     {
         minX = std::min(minX, static_cast<float>(block.x));
         maxX = std::max(maxX, static_cast<float>(block.x));
@@ -638,10 +688,10 @@ void Game::DrawMiniPiece(TetrominoType type, sf::Vector2f origin)
     const float height = (maxY - minY + 1.0f) * miniBlockSize;
     const float startX = origin.x + (110.0f - width) * 0.5f;
     const float startY = origin.y + (110.0f - height) * 0.5f;
+    sf::RectangleShape cell({miniBlockSize - 2.0f, miniBlockSize - 2.0f});
 
-    for (const Point& block : preview.GetBlockLocations())
+    for (const Point& block : previewBlocks)
     {
-        sf::RectangleShape cell({miniBlockSize - 2.0f, miniBlockSize - 2.0f});
         cell.setPosition({
             startX + (block.x - minX) * miniBlockSize,
             startY + (block.y - minY) * miniBlockSize
@@ -657,9 +707,9 @@ void Game::DrawPanel()
     const sf::Vector2f holdBoxPos{460.0f, 240.0f};
 
     sf::RectangleShape box({110.0f, 110.0f});
-    box.setFillColor(sf::Color(28, 32, 40));
+    box.setFillColor(PanelColor);
     box.setOutlineThickness(2.0f);
-    box.setOutlineColor(sf::Color(80, 86, 98));
+    box.setOutlineColor(PanelOutlineColor);
 
     box.setPosition(nextBoxPos);
     m_window.draw(box);
@@ -673,22 +723,22 @@ void Game::DrawPanel()
 
     sf::RectangleShape meter({180.0f, 16.0f});
     meter.setPosition({460.0f, 390.0f});
-    meter.setFillColor(sf::Color(40, 44, 54));
+    meter.setFillColor(MeterTrackColor);
     m_window.draw(meter);
 
     const float comboWidth = std::min(180.0f, static_cast<float>(std::max(m_combo, 0)) * 24.0f);
     meter.setSize({comboWidth, 16.0f});
-    meter.setFillColor(sf::Color(255, 176, 64));
+    meter.setFillColor(ComboMeterColor);
     m_window.draw(meter);
 
     meter.setSize({180.0f, 16.0f});
     meter.setPosition({460.0f, 430.0f});
-    meter.setFillColor(sf::Color(40, 44, 54));
+    meter.setFillColor(MeterTrackColor);
     m_window.draw(meter);
 
     const float levelRatio = std::min(1.0f, static_cast<float>(m_totalLines % 10) / 10.0f);
     meter.setSize({180.0f * levelRatio, 16.0f});
-    meter.setFillColor(sf::Color(96, 200, 128));
+    meter.setFillColor(LevelMeterColor);
     m_window.draw(meter);
 }
 
@@ -715,4 +765,9 @@ void Game::DrawOverlay()
     panel.setOutlineThickness(2.0f);
     panel.setOutlineColor(sf::Color(90, 96, 108));
     m_window.draw(panel);
+}
+
+void Game::MarkTitleDirty()
+{
+    m_isWindowTitleDirty = true;
 }

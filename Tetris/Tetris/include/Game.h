@@ -53,6 +53,7 @@ private:
     void DrawMiniPiece(TetrominoType type, sf::Vector2f origin);
     void DrawPanel();
     void DrawOverlay();
+    void MarkTitleDirty();
 
 private:
     static constexpr int InitialFallIntervalMs = 800;
@@ -101,4 +102,5 @@ private:
 
     std::mt19937 m_randomEngine;
     std::vector<TetrominoType> m_pieceBag;
+    bool m_isWindowTitleDirty = true;
 };
