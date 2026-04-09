@@ -173,6 +173,8 @@ if exist "$(SFMLDir)\bin\sfml-system-3.dll" copy /Y "$(SFMLDir)\bin\sfml-system-
   <ItemGroup>
     <ClCompile Include="src\Board.cpp" />
     <ClCompile Include="src\Game.cpp" />
+    <ClCompile Include="src\GameInput.cpp" />
+    <ClCompile Include="src\GameRender.cpp" />
     <ClCompile Include="src\Tetromino.cpp" />
     <ClCompile Include="src\main.cpp" />
   </ItemGroup>
