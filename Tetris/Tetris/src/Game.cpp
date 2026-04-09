@@ -139,6 +139,7 @@ void Game::HandlePlayingInput(sf::Keyboard::Key key)
 {
     if (key == sf::Keyboard::Key::Escape)
     {
+        ClearContinuousInputState();
         m_state = GameState::Paused;
         m_pauseMenuSelection = 0;
         MarkTitleDirty();
@@ -239,6 +240,7 @@ void Game::ActivatePauseMenuSelection()
 {
     if (m_pauseMenuSelection == 0)
     {
+        ClearContinuousInputState();
         m_state = GameState::Playing;
         m_fallClock.restart();
 
@@ -250,6 +252,7 @@ void Game::ActivatePauseMenuSelection()
 
     if (m_pauseMenuSelection == 1)
     {
+        ClearContinuousInputState();
         StartNewSession();
         return;
     }
@@ -261,12 +264,14 @@ void Game::ActivateGameOverMenuSelection()
 {
     if (m_gameOverMenuSelection == 0)
     {
+        ClearContinuousInputState();
         StartNewSession();
         return;
     }
 
     if (m_gameOverMenuSelection == 1)
     {
+        ClearContinuousInputState();
         m_state = GameState::Title;
         m_titleMenuSelection = 0;
         MarkTitleDirty();
@@ -675,6 +680,17 @@ void Game::BeginSoftDropInput()
 void Game::EndSoftDropInput()
 {
     m_softDropPressed = false;
+    m_softDropClock.restart();
+}
+
+void Game::ClearContinuousInputState()
+{
+    m_leftPressed = false;
+    m_rightPressed = false;
+    m_softDropPressed = false;
+    m_hasReachedHorizontalRepeat = false;
+    m_lastHorizontalDirection = 0;
+    m_horizontalInputClock.restart();
     m_softDropClock.restart();
 }
 

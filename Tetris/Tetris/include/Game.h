@@ -51,6 +51,7 @@ private:
     void EndHorizontalInput(int direction);
     void BeginSoftDropInput();
     void EndSoftDropInput();
+    void ClearContinuousInputState();
     int GetActiveHorizontalDirection() const;
     bool IsCurrentPieceTouchingGround() const;
     bool DetectTSpin() const;
