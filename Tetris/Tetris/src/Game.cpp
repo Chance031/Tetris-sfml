@@ -714,14 +714,40 @@ bool Game::DetectTSpin() const
     };
 
     int blockedCorners = 0;
+    std::array<bool, 4> isBlocked{};
 
-    for (const Point& corner : corners)
+    for (std::size_t index = 0; index < corners.size(); ++index)
     {
-        if (!m_board.IsInside(corner) || m_board.IsCellFilled(corner))
+        if (!m_board.IsInside(corners[index]) || m_board.IsCellFilled(corners[index]))
+        {
             ++blockedCorners;
+            isBlocked[index] = true;
+        }
     }
 
-    return blockedCorners >= 3;
+    if (blockedCorners < 3)
+        return false;
+
+    std::array<int, 2> frontCornerIndices{};
+    switch (m_currentPiece.GetRotationIndex())
+    {
+    case 0:
+        frontCornerIndices = {0, 1};
+        break;
+    case 1:
+        frontCornerIndices = {1, 3};
+        break;
+    case 2:
+        frontCornerIndices = {2, 3};
+        break;
+    case 3:
+        frontCornerIndices = {0, 2};
+        break;
+    default:
+        return false;
+    }
+
+    return isBlocked[frontCornerIndices[0]] && isBlocked[frontCornerIndices[1]];
 }
 
 void Game::HardDropCurrentPiece()
