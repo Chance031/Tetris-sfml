@@ -5,6 +5,7 @@
 #include <SFML/Graphics.hpp>
 
 #include <cstdint>
+#include <filesystem>
 #include <random>
 #include <string>
 #include <vector>
@@ -53,6 +54,8 @@ private:
     void DrawMiniPiece(TetrominoType type, sf::Vector2f origin);
     void DrawPanel();
     void DrawOverlay();
+    void DrawTextLine(std::string_view text, sf::Vector2f position, unsigned int size, sf::Color color);
+    void LoadUIFont();
     void MarkTitleDirty();
 
 private:
@@ -74,6 +77,8 @@ private:
     static constexpr float BoardOffsetY = 40.0f;
 
     sf::RenderWindow m_window;
+    sf::Font m_font;
+    bool m_hasFont = false;
 
     Board m_board;
     Tetromino m_currentPiece;

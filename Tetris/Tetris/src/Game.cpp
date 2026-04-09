@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <array>
+#include <filesystem>
 #include <optional>
 #include <sstream>
 
@@ -45,6 +46,7 @@ Game::Game()
 {
     m_window.setFramerateLimit(60);
     m_pieceBag.reserve(7);
+    LoadUIFont();
 }
 
 void Game::Run()
@@ -714,12 +716,26 @@ void Game::DrawPanel()
     box.setPosition(nextBoxPos);
     m_window.draw(box);
     DrawMiniPiece(m_nextPiece.GetType(), nextBoxPos);
+    DrawTextLine("NEXT", {460.0f, 38.0f}, 22, sf::Color(230, 232, 238));
 
     box.setPosition(holdBoxPos);
     m_window.draw(box);
+    DrawTextLine("HOLD", {460.0f, 208.0f}, 22, sf::Color(230, 232, 238));
 
     if (m_hasHoldPiece)
         DrawMiniPiece(m_holdPiece.GetType(), holdBoxPos);
+
+    DrawTextLine("SCORE", {610.0f, 72.0f}, 20, sf::Color(170, 176, 190));
+    DrawTextLine(std::to_string(m_score), {610.0f, 100.0f}, 28, sf::Color(245, 247, 250));
+
+    DrawTextLine("LEVEL", {610.0f, 160.0f}, 20, sf::Color(170, 176, 190));
+    DrawTextLine(std::to_string(m_level), {610.0f, 188.0f}, 28, sf::Color(245, 247, 250));
+
+    DrawTextLine("LINES", {610.0f, 248.0f}, 20, sf::Color(170, 176, 190));
+    DrawTextLine(std::to_string(m_totalLines), {610.0f, 276.0f}, 28, sf::Color(245, 247, 250));
+
+    DrawTextLine("COMBO", {460.0f, 360.0f}, 18, sf::Color(170, 176, 190));
+    DrawTextLine(std::to_string(std::max(m_combo, 0)), {648.0f, 356.0f}, 18, sf::Color(245, 247, 250));
 
     sf::RectangleShape meter({180.0f, 16.0f});
     meter.setPosition({460.0f, 390.0f});
@@ -736,10 +752,29 @@ void Game::DrawPanel()
     meter.setFillColor(MeterTrackColor);
     m_window.draw(meter);
 
+    DrawTextLine("LEVEL PROGRESS", {460.0f, 452.0f}, 18, sf::Color(170, 176, 190));
+
     const float levelRatio = std::min(1.0f, static_cast<float>(m_totalLines % 10) / 10.0f);
     meter.setSize({180.0f * levelRatio, 16.0f});
     meter.setFillColor(LevelMeterColor);
     m_window.draw(meter);
+
+    std::string stateText = "TITLE";
+    if (m_state == GameState::Playing)
+        stateText = "PLAYING";
+    else if (m_state == GameState::Paused)
+        stateText = "PAUSED";
+    else if (m_state == GameState::GameOver)
+        stateText = "GAME OVER";
+
+    DrawTextLine("STATE", {460.0f, 520.0f}, 18, sf::Color(170, 176, 190));
+    DrawTextLine(stateText, {460.0f, 546.0f}, 24, sf::Color(245, 247, 250));
+
+    if (!m_lastClearMessage.empty())
+    {
+        DrawTextLine("LAST CLEAR", {460.0f, 596.0f}, 18, sf::Color(170, 176, 190));
+        DrawTextLine(m_lastClearMessage, {460.0f, 622.0f}, 22, sf::Color(255, 214, 120));
+    }
 }
 
 void Game::DrawOverlay()
@@ -765,6 +800,54 @@ void Game::DrawOverlay()
     panel.setOutlineThickness(2.0f);
     panel.setOutlineColor(sf::Color(90, 96, 108));
     m_window.draw(panel);
+
+    if (m_state == GameState::Title)
+    {
+        DrawTextLine("TETRIS", {410.0f, 265.0f}, 34, sf::Color(245, 247, 250));
+        DrawTextLine("Enter or Space: Start", {380.0f, 320.0f}, 20, sf::Color(220, 224, 232));
+        DrawTextLine("Esc: Quit", {430.0f, 350.0f}, 20, sf::Color(220, 224, 232));
+    }
+    else if (m_state == GameState::Paused)
+    {
+        DrawTextLine("PAUSED", {415.0f, 285.0f}, 30, sf::Color(245, 247, 250));
+        DrawTextLine("P or Enter: Resume", {388.0f, 335.0f}, 20, sf::Color(220, 224, 232));
+    }
+    else if (m_state == GameState::GameOver)
+    {
+        DrawTextLine("GAME OVER", {390.0f, 278.0f}, 30, sf::Color(255, 210, 210));
+        DrawTextLine("R or Enter: Restart", {390.0f, 328.0f}, 20, sf::Color(220, 224, 232));
+        DrawTextLine("Final Score: " + std::to_string(m_score), {392.0f, 358.0f}, 20, sf::Color(255, 214, 120));
+    }
+}
+
+void Game::DrawTextLine(std::string_view text, sf::Vector2f position, unsigned int size, sf::Color color)
+{
+    if (!m_hasFont)
+        return;
+
+    sf::Text label(m_font, std::string(text), size);
+    label.setFillColor(color);
+    label.setPosition(position);
+    m_window.draw(label);
+}
+
+void Game::LoadUIFont()
+{
+    const std::array<std::filesystem::path, 4> candidates{
+        std::filesystem::path("assets/fonts/malgun.ttf"),
+        std::filesystem::path("assets/fonts/arial.ttf"),
+        std::filesystem::path("C:/Windows/Fonts/malgun.ttf"),
+        std::filesystem::path("C:/Windows/Fonts/arial.ttf")
+    };
+
+    for (const auto& path : candidates)
+    {
+        if (std::filesystem::exists(path) && m_font.openFromFile(path))
+        {
+            m_hasFont = true;
+            return;
+        }
+    }
 }
 
 void Game::MarkTitleDirty()
