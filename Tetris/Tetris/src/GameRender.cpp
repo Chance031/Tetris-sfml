@@ -107,22 +107,6 @@ void Game::DrawBoard()
 
     DrawPiece(GetGhostPiece(), 70);
     DrawPiece(m_currentPiece);
-
-    if (!m_isClearFlashActive)
-        return;
-
-    const sf::Time elapsed = m_clearFlashClock.getElapsedTime();
-    if (elapsed >= sf::milliseconds(ClearFlashDurationMs))
-    {
-        m_isClearFlashActive = false;
-        return;
-    }
-
-    const float progress = 1.0f - (elapsed.asMilliseconds() / static_cast<float>(ClearFlashDurationMs));
-    sf::RectangleShape flash({Board::Width * BlockSize, Board::Height * BlockSize});
-    flash.setPosition({BoardOffsetX, BoardOffsetY});
-    flash.setFillColor(sf::Color(255, 244, 214, static_cast<std::uint8_t>(90.0f * progress)));
-    m_window.draw(flash);
 }
 
 void Game::DrawPiece(const Tetromino& tetromino, std::uint8_t alpha, bool useBoardOffset)

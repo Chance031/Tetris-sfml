@@ -45,7 +45,6 @@ void Game::StartNewSession()
     m_titleMenuSelection = 0;
     m_pauseMenuSelection = 0;
     m_gameOverMenuSelection = 0;
-    m_isClearFlashActive = false;
     ClearContinuousInputState();
     m_pieceBag.clear();
     m_state = GameState::Playing;
@@ -176,8 +175,6 @@ void Game::ProcessLockAndResolve()
         }
 
         UpdateLevel();
-        m_isClearFlashActive = true;
-        m_clearFlashClock.restart();
     }
     else
     {
