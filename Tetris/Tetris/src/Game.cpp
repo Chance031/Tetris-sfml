@@ -125,10 +125,14 @@ void Game::HandleKeyReleased(sf::Keyboard::Key key)
 
 void Game::HandleTitleInput(sf::Keyboard::Key key)
 {
-    if (key == sf::Keyboard::Key::Enter || key == sf::Keyboard::Key::Space)
-        StartNewSession();
-    else if (key == sf::Keyboard::Key::Escape)
-        m_window.close();
+    if (key == sf::Keyboard::Key::Up || key == sf::Keyboard::Key::W)
+        ChangeMenuSelection(m_titleMenuSelection, -1, 2);
+    else if (key == sf::Keyboard::Key::Down || key == sf::Keyboard::Key::S)
+        ChangeMenuSelection(m_titleMenuSelection, 1, 2);
+    else if (key == sf::Keyboard::Key::Enter || key == sf::Keyboard::Key::Space)
+        ActivateTitleMenuSelection();
+
+    MarkTitleDirty();
 }
 
 void Game::HandlePlayingInput(sf::Keyboard::Key key)
@@ -136,13 +140,7 @@ void Game::HandlePlayingInput(sf::Keyboard::Key key)
     if (key == sf::Keyboard::Key::Escape)
     {
         m_state = GameState::Paused;
-        MarkTitleDirty();
-        return;
-    }
-
-    if (key == sf::Keyboard::Key::P)
-    {
-        m_state = GameState::Paused;
+        m_pauseMenuSelection = 0;
         MarkTitleDirty();
         return;
     }
@@ -192,31 +190,92 @@ void Game::HandlePlayingInput(sf::Keyboard::Key key)
 
 void Game::HandlePausedInput(sf::Keyboard::Key key)
 {
-    if (key == sf::Keyboard::Key::P || key == sf::Keyboard::Key::Enter)
-    {
-        m_state = GameState::Playing;
-        m_fallClock.restart();
-
-        if (m_isTouchingGround)
-            m_lockClock.restart();
-    }
-    else if (key == sf::Keyboard::Key::Escape || key == sf::Keyboard::Key::Q)
-    {
-        m_window.close();
-        return;
-    }
+    if (key == sf::Keyboard::Key::Up || key == sf::Keyboard::Key::W)
+        ChangeMenuSelection(m_pauseMenuSelection, -1, 3);
+    else if (key == sf::Keyboard::Key::Down || key == sf::Keyboard::Key::S)
+        ChangeMenuSelection(m_pauseMenuSelection, 1, 3);
+    else if (key == sf::Keyboard::Key::Enter || key == sf::Keyboard::Key::Space)
+        ActivatePauseMenuSelection();
+    else if (key == sf::Keyboard::Key::Escape)
+        m_pauseMenuSelection = 0, ActivatePauseMenuSelection();
 
     MarkTitleDirty();
 }
 
 void Game::HandleGameOverInput(sf::Keyboard::Key key)
 {
-    if (key == sf::Keyboard::Key::R || key == sf::Keyboard::Key::Enter || key == sf::Keyboard::Key::Space)
-        StartNewSession();
+    if (key == sf::Keyboard::Key::Up || key == sf::Keyboard::Key::W)
+        ChangeMenuSelection(m_gameOverMenuSelection, -1, 3);
+    else if (key == sf::Keyboard::Key::Down || key == sf::Keyboard::Key::S)
+        ChangeMenuSelection(m_gameOverMenuSelection, 1, 3);
+    else if (key == sf::Keyboard::Key::R)
+    {
+        m_gameOverMenuSelection = 0;
+        ActivateGameOverMenuSelection();
+    }
+    else if (key == sf::Keyboard::Key::Enter || key == sf::Keyboard::Key::Space)
+        ActivateGameOverMenuSelection();
     else if (key == sf::Keyboard::Key::Escape)
         m_window.close();
 
     MarkTitleDirty();
+}
+
+void Game::ChangeMenuSelection(int& selection, int delta, int itemCount)
+{
+    selection = (selection + delta + itemCount) % itemCount;
+}
+
+void Game::ActivateTitleMenuSelection()
+{
+    if (m_titleMenuSelection == 0)
+    {
+        StartNewSession();
+        return;
+    }
+
+    m_window.close();
+}
+
+void Game::ActivatePauseMenuSelection()
+{
+    if (m_pauseMenuSelection == 0)
+    {
+        m_state = GameState::Playing;
+        m_fallClock.restart();
+
+        if (m_isTouchingGround)
+            m_lockClock.restart();
+
+        return;
+    }
+
+    if (m_pauseMenuSelection == 1)
+    {
+        StartNewSession();
+        return;
+    }
+
+    m_window.close();
+}
+
+void Game::ActivateGameOverMenuSelection()
+{
+    if (m_gameOverMenuSelection == 0)
+    {
+        StartNewSession();
+        return;
+    }
+
+    if (m_gameOverMenuSelection == 1)
+    {
+        m_state = GameState::Title;
+        m_titleMenuSelection = 0;
+        MarkTitleDirty();
+        return;
+    }
+
+    m_window.close();
 }
 
 void Game::StartNewSession()
@@ -235,6 +294,9 @@ void Game::StartNewSession()
     m_hasHoldPiece = false;
     m_canHold = true;
     m_lockResetCount = 0;
+    m_titleMenuSelection = 0;
+    m_pauseMenuSelection = 0;
+    m_gameOverMenuSelection = 0;
     m_leftPressed = false;
     m_rightPressed = false;
     m_softDropPressed = false;
@@ -851,7 +913,7 @@ void Game::DrawPanel()
     card.setOutlineColor(cardOutline);
 
     DrawTextLine("TETRIS HUD", {458.0f, 26.0f}, 28, valueColor);
-    DrawTextLine("Hold: C   Pause: P", {460.0f, 58.0f}, 16, hintColor);
+    DrawTextLine("Hold: C   Pause: Esc", {460.0f, 58.0f}, 16, hintColor);
 
     const sf::Vector2f nextCardPos{460.0f, 92.0f};
     const sf::Vector2f holdCardPos{460.0f, 244.0f};
@@ -957,8 +1019,8 @@ void Game::DrawOverlay()
 
     m_window.draw(overlay);
 
-    sf::RectangleShape panel({340.0f, 214.0f});
-    panel.setPosition({310.0f, 218.0f});
+    sf::RectangleShape panel({360.0f, 300.0f});
+    panel.setPosition({300.0f, 192.0f});
     panel.setFillColor(sf::Color(24, 28, 36, 220));
     panel.setOutlineThickness(2.0f);
     panel.setOutlineColor(sf::Color(90, 96, 108));
@@ -968,22 +1030,26 @@ void Game::DrawOverlay()
     {
         DrawCenteredTextLine("TETRIS", 480.0f, 250.0f, 36, sf::Color(245, 247, 250));
         DrawCenteredTextLine("Falling blocks, clean timing.", 480.0f, 300.0f, 18, sf::Color(208, 214, 224));
-        DrawCenteredTextLine("Enter or Space : Start", 480.0f, 352.0f, 20, sf::Color(230, 233, 240));
-        DrawCenteredTextLine("Esc : Quit", 480.0f, 384.0f, 18, sf::Color(200, 205, 214));
+        DrawMenuOption("Start", 480.0f, 350.0f, m_titleMenuSelection == 0);
+        DrawMenuOption("Quit", 480.0f, 388.0f, m_titleMenuSelection == 1);
     }
     else if (m_state == GameState::Paused)
     {
         DrawCenteredTextLine("PAUSED", 480.0f, 268.0f, 34, sf::Color(245, 247, 250));
         DrawCenteredTextLine("Take a breath, then jump back in.", 480.0f, 318.0f, 18, sf::Color(208, 214, 224));
-        DrawCenteredTextLine("P or Enter : Resume", 480.0f, 368.0f, 20, sf::Color(230, 233, 240));
-        DrawCenteredTextLine("Esc or Q : Quit", 480.0f, 398.0f, 18, sf::Color(200, 205, 214));
+        DrawCenteredTextLine("Esc : Resume", 480.0f, 344.0f, 16, sf::Color(200, 205, 214));
+        DrawMenuOption("Resume", 480.0f, 360.0f, m_pauseMenuSelection == 0);
+        DrawMenuOption("Restart", 480.0f, 398.0f, m_pauseMenuSelection == 1);
+        DrawMenuOption("Quit", 480.0f, 436.0f, m_pauseMenuSelection == 2);
     }
     else if (m_state == GameState::GameOver)
     {
         DrawCenteredTextLine("GAME OVER", 480.0f, 254.0f, 34, sf::Color(255, 210, 210));
         DrawCenteredTextLine("Final Score", 480.0f, 306.0f, 18, sf::Color(208, 214, 224));
         DrawCenteredTextLine(std::to_string(m_score), 480.0f, 334.0f, 30, sf::Color(255, 214, 120));
-        DrawCenteredTextLine("R or Enter : Restart", 480.0f, 382.0f, 20, sf::Color(230, 233, 240));
+        DrawMenuOption("Restart", 480.0f, 382.0f, m_gameOverMenuSelection == 0);
+        DrawMenuOption("Back to Title", 480.0f, 420.0f, m_gameOverMenuSelection == 1);
+        DrawMenuOption("Quit", 480.0f, 458.0f, m_gameOverMenuSelection == 2);
     }
 }
 
@@ -1009,6 +1075,13 @@ void Game::DrawCenteredTextLine(std::string_view text, float centerX, float y, u
     const sf::FloatRect bounds = label.getLocalBounds();
     label.setPosition({centerX - (bounds.position.x + bounds.size.x * 0.5f), y});
     m_window.draw(label);
+}
+
+void Game::DrawMenuOption(std::string_view text, float centerX, float y, bool selected)
+{
+    const sf::Color optionColor = selected ? sf::Color(255, 214, 120) : sf::Color(220, 225, 234);
+    const std::string label = selected ? "> " + std::string(text) + " <" : std::string(text);
+    DrawCenteredTextLine(label, centerX, y, 20, optionColor);
 }
 
 void Game::LoadUIFont()

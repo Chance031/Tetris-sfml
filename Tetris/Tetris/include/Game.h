@@ -24,6 +24,10 @@ private:
     void HandlePlayingInput(sf::Keyboard::Key key);
     void HandlePausedInput(sf::Keyboard::Key key);
     void HandleGameOverInput(sf::Keyboard::Key key);
+    void ChangeMenuSelection(int& selection, int delta, int itemCount);
+    void ActivateTitleMenuSelection();
+    void ActivatePauseMenuSelection();
+    void ActivateGameOverMenuSelection();
 
     void StartNewSession();
     void Update();
@@ -63,6 +67,7 @@ private:
     void DrawOverlay();
     void DrawTextLine(std::string_view text, sf::Vector2f position, unsigned int size, sf::Color color);
     void DrawCenteredTextLine(std::string_view text, float centerX, float y, unsigned int size, sf::Color color);
+    void DrawMenuOption(std::string_view text, float centerX, float y, bool selected);
     void LoadUIFont();
     void MarkTitleDirty();
 
@@ -115,6 +120,9 @@ private:
     int m_totalLines = 0;
     int m_combo = -1;
     int m_lockResetCount = 0;
+    int m_titleMenuSelection = 0;
+    int m_pauseMenuSelection = 0;
+    int m_gameOverMenuSelection = 0;
 
     std::string m_lastClearMessage;
 
