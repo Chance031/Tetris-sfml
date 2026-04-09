@@ -705,57 +705,79 @@ void Game::DrawMiniPiece(TetrominoType type, sf::Vector2f origin)
 
 void Game::DrawPanel()
 {
-    const sf::Vector2f nextBoxPos{460.0f, 70.0f};
-    const sf::Vector2f holdBoxPos{460.0f, 240.0f};
+    const sf::Color cardFill(22, 26, 34);
+    const sf::Color cardOutline(76, 82, 96);
+    const sf::Color labelColor(156, 164, 180);
+    const sf::Color valueColor(244, 246, 250);
+    const sf::Color accentColor(255, 214, 120);
+    const sf::Color hintColor(198, 203, 214);
 
-    sf::RectangleShape box({110.0f, 110.0f});
-    box.setFillColor(PanelColor);
-    box.setOutlineThickness(2.0f);
-    box.setOutlineColor(PanelOutlineColor);
+    sf::RectangleShape card;
+    card.setFillColor(cardFill);
+    card.setOutlineThickness(2.0f);
+    card.setOutlineColor(cardOutline);
 
-    box.setPosition(nextBoxPos);
-    m_window.draw(box);
-    DrawMiniPiece(m_nextPiece.GetType(), nextBoxPos);
-    DrawTextLine("NEXT", {460.0f, 38.0f}, 22, sf::Color(230, 232, 238));
+    DrawTextLine("TETRIS HUD", {458.0f, 26.0f}, 28, valueColor);
+    DrawTextLine("Hold: C   Pause: P", {460.0f, 58.0f}, 16, hintColor);
 
-    box.setPosition(holdBoxPos);
-    m_window.draw(box);
-    DrawTextLine("HOLD", {460.0f, 208.0f}, 22, sf::Color(230, 232, 238));
+    const sf::Vector2f nextCardPos{460.0f, 92.0f};
+    const sf::Vector2f holdCardPos{460.0f, 244.0f};
+    card.setSize({132.0f, 132.0f});
 
+    card.setPosition(nextCardPos);
+    m_window.draw(card);
+    DrawTextLine("NEXT", {476.0f, 106.0f}, 18, labelColor);
+    DrawMiniPiece(m_nextPiece.GetType(), {471.0f, 124.0f});
+
+    card.setPosition(holdCardPos);
+    m_window.draw(card);
+    DrawTextLine("HOLD", {476.0f, 258.0f}, 18, labelColor);
     if (m_hasHoldPiece)
-        DrawMiniPiece(m_holdPiece.GetType(), holdBoxPos);
+        DrawMiniPiece(m_holdPiece.GetType(), {471.0f, 276.0f});
+    else
+        DrawTextLine("EMPTY", {490.0f, 322.0f}, 16, hintColor);
 
-    DrawTextLine("SCORE", {610.0f, 72.0f}, 20, sf::Color(170, 176, 190));
-    DrawTextLine(std::to_string(m_score), {610.0f, 100.0f}, 28, sf::Color(245, 247, 250));
+    const sf::Vector2f statsCardPos{614.0f, 92.0f};
+    card.setPosition(statsCardPos);
+    card.setSize({220.0f, 284.0f});
+    m_window.draw(card);
 
-    DrawTextLine("LEVEL", {610.0f, 160.0f}, 20, sf::Color(170, 176, 190));
-    DrawTextLine(std::to_string(m_level), {610.0f, 188.0f}, 28, sf::Color(245, 247, 250));
+    DrawTextLine("SCORE", {632.0f, 108.0f}, 18, labelColor);
+    DrawTextLine(std::to_string(m_score), {632.0f, 136.0f}, 30, valueColor);
 
-    DrawTextLine("LINES", {610.0f, 248.0f}, 20, sf::Color(170, 176, 190));
-    DrawTextLine(std::to_string(m_totalLines), {610.0f, 276.0f}, 28, sf::Color(245, 247, 250));
+    DrawTextLine("LEVEL", {632.0f, 192.0f}, 18, labelColor);
+    DrawTextLine(std::to_string(m_level), {632.0f, 220.0f}, 28, valueColor);
 
-    DrawTextLine("COMBO", {460.0f, 360.0f}, 18, sf::Color(170, 176, 190));
-    DrawTextLine(std::to_string(std::max(m_combo, 0)), {648.0f, 356.0f}, 18, sf::Color(245, 247, 250));
+    DrawTextLine("LINES", {632.0f, 268.0f}, 18, labelColor);
+    DrawTextLine(std::to_string(m_totalLines), {632.0f, 296.0f}, 28, valueColor);
 
-    sf::RectangleShape meter({180.0f, 16.0f});
-    meter.setPosition({460.0f, 390.0f});
+    DrawTextLine("COMBO", {632.0f, 328.0f}, 16, labelColor);
+    DrawTextLine(std::to_string(std::max(m_combo, 0)), {760.0f, 326.0f}, 18, valueColor);
+
+    card.setPosition({460.0f, 410.0f});
+    card.setSize({374.0f, 122.0f});
+    m_window.draw(card);
+
+    DrawTextLine("COMBO FLOW", {478.0f, 426.0f}, 18, labelColor);
+
+    sf::RectangleShape meter({338.0f, 14.0f});
+    meter.setPosition({478.0f, 458.0f});
     meter.setFillColor(MeterTrackColor);
     m_window.draw(meter);
 
-    const float comboWidth = std::min(180.0f, static_cast<float>(std::max(m_combo, 0)) * 24.0f);
-    meter.setSize({comboWidth, 16.0f});
+    const float comboWidth = std::min(338.0f, static_cast<float>(std::max(m_combo, 0)) * 42.0f);
+    meter.setSize({comboWidth, 14.0f});
     meter.setFillColor(ComboMeterColor);
     m_window.draw(meter);
 
-    meter.setSize({180.0f, 16.0f});
-    meter.setPosition({460.0f, 430.0f});
+    DrawTextLine("LEVEL PROGRESS", {478.0f, 484.0f}, 18, labelColor);
+    meter.setSize({338.0f, 14.0f});
+    meter.setPosition({478.0f, 514.0f});
     meter.setFillColor(MeterTrackColor);
     m_window.draw(meter);
 
-    DrawTextLine("LEVEL PROGRESS", {460.0f, 452.0f}, 18, sf::Color(170, 176, 190));
-
     const float levelRatio = std::min(1.0f, static_cast<float>(m_totalLines % 10) / 10.0f);
-    meter.setSize({180.0f * levelRatio, 16.0f});
+    meter.setSize({338.0f * levelRatio, 14.0f});
     meter.setFillColor(LevelMeterColor);
     m_window.draw(meter);
 
@@ -767,13 +789,21 @@ void Game::DrawPanel()
     else if (m_state == GameState::GameOver)
         stateText = "GAME OVER";
 
-    DrawTextLine("STATE", {460.0f, 520.0f}, 18, sf::Color(170, 176, 190));
-    DrawTextLine(stateText, {460.0f, 546.0f}, 24, sf::Color(245, 247, 250));
+    card.setPosition({460.0f, 554.0f});
+    card.setSize({374.0f, 112.0f});
+    m_window.draw(card);
+
+    DrawTextLine("STATE", {478.0f, 570.0f}, 18, labelColor);
+    DrawTextLine(stateText, {478.0f, 600.0f}, 28, valueColor);
 
     if (!m_lastClearMessage.empty())
     {
-        DrawTextLine("LAST CLEAR", {460.0f, 596.0f}, 18, sf::Color(170, 176, 190));
-        DrawTextLine(m_lastClearMessage, {460.0f, 622.0f}, 22, sf::Color(255, 214, 120));
+        DrawTextLine("LAST CLEAR", {640.0f, 570.0f}, 18, labelColor);
+        DrawTextLine(m_lastClearMessage, {640.0f, 600.0f}, 22, accentColor);
+    }
+    else
+    {
+        DrawTextLine("Build a combo for bonus points", {478.0f, 634.0f}, 16, hintColor);
     }
 }
 
@@ -794,8 +824,8 @@ void Game::DrawOverlay()
 
     m_window.draw(overlay);
 
-    sf::RectangleShape panel({280.0f, 180.0f});
-    panel.setPosition({340.0f, 230.0f});
+    sf::RectangleShape panel({340.0f, 214.0f});
+    panel.setPosition({310.0f, 218.0f});
     panel.setFillColor(sf::Color(24, 28, 36, 220));
     panel.setOutlineThickness(2.0f);
     panel.setOutlineColor(sf::Color(90, 96, 108));
@@ -803,20 +833,23 @@ void Game::DrawOverlay()
 
     if (m_state == GameState::Title)
     {
-        DrawTextLine("TETRIS", {410.0f, 265.0f}, 34, sf::Color(245, 247, 250));
-        DrawTextLine("Enter or Space: Start", {380.0f, 320.0f}, 20, sf::Color(220, 224, 232));
-        DrawTextLine("Esc: Quit", {430.0f, 350.0f}, 20, sf::Color(220, 224, 232));
+        DrawTextLine("TETRIS", {410.0f, 250.0f}, 36, sf::Color(245, 247, 250));
+        DrawTextLine("Falling blocks, clean timing.", {360.0f, 300.0f}, 18, sf::Color(208, 214, 224));
+        DrawTextLine("Enter or Space : Start", {358.0f, 352.0f}, 20, sf::Color(230, 233, 240));
+        DrawTextLine("Esc : Quit", {426.0f, 384.0f}, 18, sf::Color(200, 205, 214));
     }
     else if (m_state == GameState::Paused)
     {
-        DrawTextLine("PAUSED", {415.0f, 285.0f}, 30, sf::Color(245, 247, 250));
-        DrawTextLine("P or Enter: Resume", {388.0f, 335.0f}, 20, sf::Color(220, 224, 232));
+        DrawTextLine("PAUSED", {406.0f, 268.0f}, 34, sf::Color(245, 247, 250));
+        DrawTextLine("Take a breath, then jump back in.", {346.0f, 318.0f}, 18, sf::Color(208, 214, 224));
+        DrawTextLine("P or Enter : Resume", {372.0f, 368.0f}, 20, sf::Color(230, 233, 240));
     }
     else if (m_state == GameState::GameOver)
     {
-        DrawTextLine("GAME OVER", {390.0f, 278.0f}, 30, sf::Color(255, 210, 210));
-        DrawTextLine("R or Enter: Restart", {390.0f, 328.0f}, 20, sf::Color(220, 224, 232));
-        DrawTextLine("Final Score: " + std::to_string(m_score), {392.0f, 358.0f}, 20, sf::Color(255, 214, 120));
+        DrawTextLine("GAME OVER", {382.0f, 254.0f}, 34, sf::Color(255, 210, 210));
+        DrawTextLine("Final Score", {425.0f, 306.0f}, 18, sf::Color(208, 214, 224));
+        DrawTextLine(std::to_string(m_score), {446.0f, 334.0f}, 30, sf::Color(255, 214, 120));
+        DrawTextLine("R or Enter : Restart", {370.0f, 382.0f}, 20, sf::Color(230, 233, 240));
     }
 }
 
