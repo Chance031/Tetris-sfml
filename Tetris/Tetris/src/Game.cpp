@@ -215,8 +215,6 @@ void Game::HandleGameOverInput(sf::Keyboard::Key key)
     }
     else if (key == sf::Keyboard::Key::Enter || key == sf::Keyboard::Key::Space)
         ActivateGameOverMenuSelection();
-    else if (key == sf::Keyboard::Key::Escape)
-        m_window.close();
 
     MarkTitleDirty();
 }
@@ -371,7 +369,7 @@ void Game::UpdateWindowTitle()
             title << " | " << m_lastClearMessage;
         break;
     case GameState::Paused:
-        title << "Paused - Press P or Enter to resume";
+        title << "Paused - Press Esc or Enter to resume";
         break;
     case GameState::GameOver:
         title << "Game Over - Press R or Enter to restart";
