@@ -98,6 +98,7 @@ private:
     GameState m_state = GameState::Title;
     bool m_isLockRequired = false;
     bool m_isTouchingGround = false;
+    bool m_hasTouchedGround = false;
     bool m_lastMoveWasRotation = false;
     bool m_hasHoldPiece = false;
     bool m_canHold = true;

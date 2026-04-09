@@ -229,6 +229,7 @@ void Game::StartNewSession()
     m_lastClearMessage.clear();
     m_isLockRequired = false;
     m_isTouchingGround = false;
+    m_hasTouchedGround = false;
     m_lastMoveWasRotation = false;
     m_hasHoldPiece = false;
     m_canHold = true;
@@ -354,6 +355,9 @@ void Game::SpawnNextPiece()
     m_currentPiece = m_nextPiece;
     m_currentPiece.SetPosition(Board::Width / 2 - 1, 0);
     m_currentPiece.SetRotation(0);
+    m_isTouchingGround = false;
+    m_hasTouchedGround = false;
+    m_lockResetCount = 0;
     m_lastMoveWasRotation = false;
 
     m_nextPiece = Tetromino(CreateRandomTetrominoType());
@@ -506,14 +510,13 @@ void Game::StartLockDelay()
         return;
 
     m_isTouchingGround = true;
-    m_lockResetCount = 0;
+    m_hasTouchedGround = true;
     m_lockClock.restart();
 }
 
 void Game::ResetLockDelay()
 {
     m_isTouchingGround = false;
-    m_lockResetCount = 0;
     m_lockClock.restart();
 }
 
@@ -535,6 +538,7 @@ void Game::RefreshLockDelayAfterSuccessfulMove()
         return;
 
     ++m_lockResetCount;
+    m_hasTouchedGround = true;
     m_lockClock.restart();
 }
 
