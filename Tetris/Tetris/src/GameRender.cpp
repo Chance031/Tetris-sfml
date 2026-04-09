@@ -202,16 +202,16 @@ void Game::DrawPanel()
     m_window.draw(card);
 
     DrawTextLine("RUN", {632.0f, 108.0f}, 18, labelColor);
-    DrawTextLine("SCORE", {632.0f, 138.0f}, 16, labelColor);
-    DrawTextLine(std::to_string(m_score), {632.0f, 162.0f}, 30, valueColor);
+    DrawTextLine("SCORE", {632.0f, 136.0f}, 16, labelColor);
+    DrawTextLine(std::to_string(m_score), {632.0f, 158.0f}, 30, valueColor);
 
-    DrawTextLine("LEVEL", {632.0f, 214.0f}, 16, labelColor);
-    DrawTextLine(std::to_string(m_level), {632.0f, 238.0f}, 28, valueColor);
+    DrawTextLine("LEVEL", {632.0f, 208.0f}, 16, labelColor);
+    DrawTextLine(std::to_string(m_level), {632.0f, 230.0f}, 28, valueColor);
 
-    DrawTextLine("LINES", {632.0f, 286.0f}, 16, labelColor);
-    DrawTextLine(std::to_string(m_totalLines), {632.0f, 310.0f}, 28, valueColor);
+    DrawTextLine("LINES", {632.0f, 280.0f}, 16, labelColor);
+    DrawTextLine(std::to_string(m_totalLines), {632.0f, 302.0f}, 28, valueColor);
 
-    DrawTextLine("STATE", {742.0f, 138.0f}, 16, labelColor);
+    DrawTextLine("STATE", {742.0f, 136.0f}, 16, labelColor);
     std::string stateText = "TITLE";
     if (m_state == GameState::Playing)
         stateText = "PLAYING";
@@ -219,23 +219,25 @@ void Game::DrawPanel()
         stateText = "PAUSED";
     else if (m_state == GameState::GameOver)
         stateText = "GAME OVER";
-    DrawTextLine(stateText, {742.0f, 162.0f}, 20, stateColor);
+    const unsigned int stateSize = m_state == GameState::GameOver ? 17u : 20u;
+    DrawTextLine(stateText, {742.0f, 158.0f}, stateSize, stateColor);
 
-    DrawTextLine("B2B", {742.0f, 214.0f}, 16, labelColor);
-    DrawTextLine(m_isBackToBackActive ? "ACTIVE" : "IDLE", {742.0f, 238.0f}, 20,
+    DrawTextLine("B2B", {742.0f, 208.0f}, 16, labelColor);
+    DrawTextLine(m_isBackToBackActive ? "ACTIVE" : "IDLE", {742.0f, 230.0f}, 20,
         m_isBackToBackActive ? accentColor : hintColor);
 
-    DrawTextLine("COMBO", {742.0f, 286.0f}, 16, labelColor);
-    DrawTextLine(std::to_string(std::max(m_combo, 0)), {742.0f, 310.0f}, 20, valueColor);
+    DrawTextLine("COMBO", {742.0f, 280.0f}, 16, labelColor);
+    DrawTextLine(std::to_string(std::max(m_combo, 0)), {742.0f, 302.0f}, 20, valueColor);
 
     card.setPosition({460.0f, 410.0f});
-    card.setSize({374.0f, 122.0f});
+    card.setSize({374.0f, 130.0f});
     m_window.draw(card);
 
-    DrawTextLine("PROGRESS", {478.0f, 426.0f}, 18, labelColor);
+    DrawTextLine("PROGRESS", {478.0f, 421.0f}, 18, labelColor);
+    DrawTextLine("COMBO FLOW", {478.0f, 446.0f}, 16, labelColor);
 
     sf::RectangleShape meter({338.0f, 14.0f});
-    meter.setPosition({478.0f, 458.0f});
+    meter.setPosition({478.0f, 468.0f});
     meter.setFillColor(MeterTrackColor);
     m_window.draw(meter);
 
@@ -244,10 +246,9 @@ void Game::DrawPanel()
     meter.setFillColor(ComboMeterColor);
     m_window.draw(meter);
 
-    DrawTextLine("COMBO FLOW", {478.0f, 438.0f}, 16, labelColor);
-    DrawTextLine("LEVEL PROGRESS", {478.0f, 484.0f}, 16, labelColor);
+    DrawTextLine("LEVEL PROGRESS", {478.0f, 500.0f}, 16, labelColor);
     meter.setSize({338.0f, 14.0f});
-    meter.setPosition({478.0f, 514.0f});
+    meter.setPosition({478.0f, 522.0f});
     meter.setFillColor(MeterTrackColor);
     m_window.draw(meter);
 
@@ -262,11 +263,11 @@ void Game::DrawPanel()
 
     DrawTextLine("RECENT", {478.0f, 570.0f}, 18, labelColor);
     DrawTextLine(m_lastClearMessage.empty() ? "No recent clear" : m_lastClearMessage,
-        {478.0f, 598.0f}, 24, m_lastClearMessage.empty() ? hintColor : accentColor);
+        {478.0f, 600.0f}, 22, m_lastClearMessage.empty() ? hintColor : accentColor);
 
     DrawTextLine("DROP SPEED", {478.0f, 634.0f}, 16, labelColor);
     DrawTextLine(std::to_string(static_cast<int>(m_fallInterval.asMilliseconds())) + " ms",
-        {610.0f, 632.0f}, 18, valueColor);
+        {614.0f, 632.0f}, 18, valueColor);
 }
 
 void Game::DrawOverlay()
