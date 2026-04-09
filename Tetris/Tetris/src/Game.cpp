@@ -5,23 +5,23 @@
 
 namespace
 {
-    // 조각 종류에 따라 기본 스폰 위치를 맞춘다.
+    // Set the default spawn position for each piece type.
     Point GetSpawnPosition(TetrominoType type)
     {
         switch (type)
         {
         case TetrominoType::I:
-            return {Board::Width / 2 - 2, 0};
+            return { Board::Width / 2 - 2, 0 };
         case TetrominoType::O:
-            return {Board::Width / 2 - 1, 0};
+            return { Board::Width / 2 - 1, 0 };
         default:
-            return {Board::Width / 2 - 1, 0};
+            return { Board::Width / 2 - 1, 0 };
         }
     }
 
     void ResetPieceForSpawn(Tetromino& piece)
     {
-        // 새로 등장하는 조각은 항상 기본 회전과 스폰 좌표에서 시작한다.
+        // Newly spawned pieces always begin from the default rotation and spawn point.
         piece.SetRotation(0);
         const Point spawnPosition = GetSpawnPosition(piece.GetType());
         piece.SetPosition(spawnPosition.x, spawnPosition.y);
@@ -29,7 +29,7 @@ namespace
 }
 
 Game::Game()
-    : m_window(sf::VideoMode({960u, 720u}), "Tetris SFML")
+    : m_window(sf::VideoMode({ 960u, 720u }), "Tetris SFML")
     , m_fallInterval(sf::milliseconds(InitialFallIntervalMs))
     , m_randomEngine(std::random_device{}())
 {
@@ -179,7 +179,7 @@ void Game::ProcessLockAndResolve()
     if (clearedLines > 0)
     {
         const int lineClearScore = isTSpin ? CalculateTSpinScore(clearedLines) : CalculateScore(clearedLines);
-        const char* clearNames[] = {"", "Single", "Double", "Triple", "Tetris"};
+        const char* clearNames[] = { "", "Single", "Double", "Triple", "Tetris" };
 
         m_lastClearMessage = isTSpin
             ? std::string("T-Spin ") + clearNames[clearedLines]
@@ -208,8 +208,8 @@ void Game::ProcessLockAndResolve()
     {
         m_combo = -1;
 
-        // 줄을 지우지 않은 T-Spin은 B2B를 유지하고,
-        // 일반 무클리어 배치는 B2B를 끊는다.
+        // A no-line T-Spin preserves the current B2B chain,
+        // while an ordinary no-clear placement breaks it.
         if (!isTSpin)
             m_isBackToBackActive = false;
     }
@@ -438,7 +438,7 @@ bool Game::DetectTSpin() const
         return false;
 
     const Point position = m_currentPiece.GetPosition();
-    const Point center{position.x + 1, position.y + 1};
+    const Point center{ position.x + 1, position.y + 1 };
     const std::array<Point, 4> corners{
         Point{center.x - 1, center.y - 1},
         Point{center.x + 1, center.y - 1},
@@ -465,16 +465,16 @@ bool Game::DetectTSpin() const
     switch (m_currentPiece.GetRotationIndex())
     {
     case 0:
-        frontCornerIndices = {0, 1};
+        frontCornerIndices = { 0, 1 };
         break;
     case 1:
-        frontCornerIndices = {1, 3};
+        frontCornerIndices = { 1, 3 };
         break;
     case 2:
-        frontCornerIndices = {2, 3};
+        frontCornerIndices = { 2, 3 };
         break;
     case 3:
-        frontCornerIndices = {0, 2};
+        frontCornerIndices = { 0, 2 };
         break;
     default:
         return false;
