@@ -5,6 +5,7 @@
 
 namespace
 {
+    // 조각 종류에 따라 기본 스폰 위치를 맞춘다.
     Point GetSpawnPosition(TetrominoType type)
     {
         switch (type)
@@ -20,6 +21,7 @@ namespace
 
     void ResetPieceForSpawn(Tetromino& piece)
     {
+        // 새로 등장하는 조각은 항상 기본 회전과 스폰 좌표에서 시작한다.
         piece.SetRotation(0);
         const Point spawnPosition = GetSpawnPosition(piece.GetType());
         piece.SetPosition(spawnPosition.x, spawnPosition.y);
@@ -205,11 +207,12 @@ void Game::ProcessLockAndResolve()
     else
     {
         m_combo = -1;
-    }
 
-    // A no-line T-Spin may preserve an existing B2B chain,
-    // but it does not start a new B2B chain by itself.
-    // Ordinary no-clear placements also leave the current B2B state unchanged.
+        // 줄을 지우지 않은 T-Spin은 B2B를 유지하고,
+        // 일반 무클리어 배치는 B2B를 끊는다.
+        if (!isTSpin)
+            m_isBackToBackActive = false;
+    }
 
     m_isLockRequired = false;
     ResetLockDelay();
@@ -249,34 +252,13 @@ bool Game::TryRotateCurrentPiece(RotationDirection direction)
             m_currentPiece.RotateCW();
         else
             m_currentPiece.RotateCCW();
-
-        if (m_board.CanPlace(m_currentPiece))
-        {
-            RefreshLockDelayAfterSuccessfulMove();
-            m_lastMoveWasRotation = true;
-            return true;
-        }
-
-        if (direction == RotationDirection::Clockwise)
-            m_currentPiece.RotateCCW();
-        else
-            m_currentPiece.RotateCW();
-
-        return false;
+        RefreshLockDelayAfterSuccessfulMove();
+        m_lastMoveWasRotation = true;
+        return true;
     }
 
     const int oldRotationIndex = m_currentPiece.GetRotationIndex();
     const auto kicks = GetSrsKicks(m_currentPiece.GetType(), oldRotationIndex, direction);
-    const std::array<Point, 2> basicWallKicks{
-        Point{-1, 0},
-        Point{1, 0}
-    };
-    const std::array<Point, 4> iWallKicks{
-        Point{-1, 0},
-        Point{1, 0},
-        Point{-2, 0},
-        Point{2, 0}
-    };
 
     if (direction == RotationDirection::Clockwise)
         m_currentPiece.RotateCW();
@@ -295,39 +277,6 @@ bool Game::TryRotateCurrentPiece(RotationDirection direction)
         }
 
         m_currentPiece.Move(-kick.x, -kick.y);
-    }
-
-    if (m_currentPiece.GetType() == TetrominoType::I)
-    {
-        for (const Point& kick : iWallKicks)
-        {
-            m_currentPiece.Move(kick.x, kick.y);
-
-            if (m_board.CanPlace(m_currentPiece))
-            {
-                RefreshLockDelayAfterSuccessfulMove();
-                m_lastMoveWasRotation = true;
-                return true;
-            }
-
-            m_currentPiece.Move(-kick.x, -kick.y);
-        }
-    }
-    else
-    {
-        for (const Point& kick : basicWallKicks)
-        {
-            m_currentPiece.Move(kick.x, kick.y);
-
-            if (m_board.CanPlace(m_currentPiece))
-            {
-                RefreshLockDelayAfterSuccessfulMove();
-                m_lastMoveWasRotation = true;
-                return true;
-            }
-
-            m_currentPiece.Move(-kick.x, -kick.y);
-        }
     }
 
     if (direction == RotationDirection::Clockwise)

@@ -304,23 +304,23 @@ void Game::DrawOverlay()
     }
     else if (m_state == GameState::Paused)
     {
-        DrawCenteredTextLine("PAUSED", 480.0f, 268.0f, 34, sf::Color(245, 247, 250));
-        DrawCenteredTextLine("Take a breath, then jump back in.", 480.0f, 318.0f, 18, sf::Color(208, 214, 224));
-        DrawCenteredTextLine("Esc : Resume", 480.0f, 344.0f, 16, sf::Color(200, 205, 214));
-        DrawMenuOption("Resume", 480.0f, 360.0f, m_pauseMenuSelection == 0);
-        DrawMenuOption("Restart", 480.0f, 398.0f, m_pauseMenuSelection == 1);
-        DrawMenuOption("Quit", 480.0f, 436.0f, m_pauseMenuSelection == 2);
-        DrawCenteredTextLine("Up/Down : Move   Enter : Confirm", 480.0f, 470.0f, 16, sf::Color(190, 196, 208));
+        DrawCenteredTextLine("PAUSED", 480.0f, 246.0f, 34, sf::Color(245, 247, 250));
+        DrawCenteredTextLine("Take a breath, then jump back in.", 480.0f, 292.0f, 18, sf::Color(208, 214, 224));
+        DrawCenteredTextLine("Esc : Resume", 480.0f, 318.0f, 16, sf::Color(200, 205, 214));
+        DrawMenuOption("Resume", 480.0f, 340.0f, m_pauseMenuSelection == 0);
+        DrawMenuOption("Restart", 480.0f, 378.0f, m_pauseMenuSelection == 1);
+        DrawMenuOption("Quit", 480.0f, 416.0f, m_pauseMenuSelection == 2);
+        DrawCenteredTextLine("Up/Down : Move   Enter : Confirm", 480.0f, 452.0f, 16, sf::Color(190, 196, 208));
     }
     else if (m_state == GameState::GameOver)
     {
-        DrawCenteredTextLine("GAME OVER", 480.0f, 254.0f, 34, sf::Color(255, 210, 210));
-        DrawCenteredTextLine("Final Score", 480.0f, 306.0f, 18, sf::Color(208, 214, 224));
-        DrawCenteredTextLine(std::to_string(m_score), 480.0f, 334.0f, 30, sf::Color(255, 214, 120));
-        DrawMenuOption("Restart", 480.0f, 382.0f, m_gameOverMenuSelection == 0);
-        DrawMenuOption("Back to Title", 480.0f, 420.0f, m_gameOverMenuSelection == 1);
-        DrawMenuOption("Quit", 480.0f, 458.0f, m_gameOverMenuSelection == 2);
-        DrawCenteredTextLine("Up/Down : Move   Enter : Confirm", 480.0f, 486.0f, 16, sf::Color(190, 196, 208));
+        DrawCenteredTextLine("GAME OVER", 480.0f, 232.0f, 34, sf::Color(255, 210, 210));
+        DrawCenteredTextLine("Final Score", 480.0f, 278.0f, 18, sf::Color(208, 214, 224));
+        DrawCenteredTextLine(std::to_string(m_score), 480.0f, 306.0f, 30, sf::Color(255, 214, 120));
+        DrawMenuOption("Restart", 480.0f, 350.0f, m_gameOverMenuSelection == 0);
+        DrawMenuOption("Back to Title", 480.0f, 388.0f, m_gameOverMenuSelection == 1);
+        DrawMenuOption("Quit", 480.0f, 426.0f, m_gameOverMenuSelection == 2);
+        DrawCenteredTextLine("Up/Down : Move   Enter : Confirm", 480.0f, 458.0f, 16, sf::Color(190, 196, 208));
     }
 }
 
