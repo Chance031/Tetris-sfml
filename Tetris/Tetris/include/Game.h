@@ -75,11 +75,11 @@ private:
     static constexpr int InitialFallIntervalMs = 800;
     static constexpr int FallIntervalDecreasePerLevel = 50;
     static constexpr int MinFallIntervalMs = 100;
-    static constexpr int LockDelayMs = 500;
+    static constexpr int LockDelayMs = 550;
     static constexpr int MaxLockResetCount = 15;
-    static constexpr int HorizontalAutoShiftDelayMs = 140;
-    static constexpr int HorizontalAutoRepeatMs = 45;
-    static constexpr int SoftDropRepeatMs = 35;
+    static constexpr int HorizontalAutoShiftDelayMs = 115;
+    static constexpr int HorizontalAutoRepeatMs = 30;
+    static constexpr int SoftDropRepeatMs = 20;
     static constexpr int SoftDropScorePerCell = 1;
     static constexpr int HardDropScorePerCell = 2;
     static constexpr int ComboScorePerStep = 50;
