@@ -62,6 +62,7 @@ private:
     void DrawPanel();
     void DrawOverlay();
     void DrawTextLine(std::string_view text, sf::Vector2f position, unsigned int size, sf::Color color);
+    void DrawCenteredTextLine(std::string_view text, float centerX, float y, unsigned int size, sf::Color color);
     void LoadUIFont();
     void MarkTitleDirty();
 

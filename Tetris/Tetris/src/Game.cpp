@@ -135,7 +135,8 @@ void Game::HandlePlayingInput(sf::Keyboard::Key key)
 {
     if (key == sf::Keyboard::Key::Escape)
     {
-        m_window.close();
+        m_state = GameState::Paused;
+        MarkTitleDirty();
         return;
     }
 
@@ -199,7 +200,7 @@ void Game::HandlePausedInput(sf::Keyboard::Key key)
         if (m_isTouchingGround)
             m_lockClock.restart();
     }
-    else if (key == sf::Keyboard::Key::Escape)
+    else if (key == sf::Keyboard::Key::Escape || key == sf::Keyboard::Key::Q)
     {
         m_window.close();
         return;
@@ -965,23 +966,24 @@ void Game::DrawOverlay()
 
     if (m_state == GameState::Title)
     {
-        DrawTextLine("TETRIS", {410.0f, 250.0f}, 36, sf::Color(245, 247, 250));
-        DrawTextLine("Falling blocks, clean timing.", {360.0f, 300.0f}, 18, sf::Color(208, 214, 224));
-        DrawTextLine("Enter or Space : Start", {358.0f, 352.0f}, 20, sf::Color(230, 233, 240));
-        DrawTextLine("Esc : Quit", {426.0f, 384.0f}, 18, sf::Color(200, 205, 214));
+        DrawCenteredTextLine("TETRIS", 480.0f, 250.0f, 36, sf::Color(245, 247, 250));
+        DrawCenteredTextLine("Falling blocks, clean timing.", 480.0f, 300.0f, 18, sf::Color(208, 214, 224));
+        DrawCenteredTextLine("Enter or Space : Start", 480.0f, 352.0f, 20, sf::Color(230, 233, 240));
+        DrawCenteredTextLine("Esc : Quit", 480.0f, 384.0f, 18, sf::Color(200, 205, 214));
     }
     else if (m_state == GameState::Paused)
     {
-        DrawTextLine("PAUSED", {406.0f, 268.0f}, 34, sf::Color(245, 247, 250));
-        DrawTextLine("Take a breath, then jump back in.", {346.0f, 318.0f}, 18, sf::Color(208, 214, 224));
-        DrawTextLine("P or Enter : Resume", {372.0f, 368.0f}, 20, sf::Color(230, 233, 240));
+        DrawCenteredTextLine("PAUSED", 480.0f, 268.0f, 34, sf::Color(245, 247, 250));
+        DrawCenteredTextLine("Take a breath, then jump back in.", 480.0f, 318.0f, 18, sf::Color(208, 214, 224));
+        DrawCenteredTextLine("P or Enter : Resume", 480.0f, 368.0f, 20, sf::Color(230, 233, 240));
+        DrawCenteredTextLine("Esc or Q : Quit", 480.0f, 398.0f, 18, sf::Color(200, 205, 214));
     }
     else if (m_state == GameState::GameOver)
     {
-        DrawTextLine("GAME OVER", {382.0f, 254.0f}, 34, sf::Color(255, 210, 210));
-        DrawTextLine("Final Score", {425.0f, 306.0f}, 18, sf::Color(208, 214, 224));
-        DrawTextLine(std::to_string(m_score), {446.0f, 334.0f}, 30, sf::Color(255, 214, 120));
-        DrawTextLine("R or Enter : Restart", {370.0f, 382.0f}, 20, sf::Color(230, 233, 240));
+        DrawCenteredTextLine("GAME OVER", 480.0f, 254.0f, 34, sf::Color(255, 210, 210));
+        DrawCenteredTextLine("Final Score", 480.0f, 306.0f, 18, sf::Color(208, 214, 224));
+        DrawCenteredTextLine(std::to_string(m_score), 480.0f, 334.0f, 30, sf::Color(255, 214, 120));
+        DrawCenteredTextLine("R or Enter : Restart", 480.0f, 382.0f, 20, sf::Color(230, 233, 240));
     }
 }
 
@@ -993,6 +995,19 @@ void Game::DrawTextLine(std::string_view text, sf::Vector2f position, unsigned i
     sf::Text label(m_font, std::string(text), size);
     label.setFillColor(color);
     label.setPosition(position);
+    m_window.draw(label);
+}
+
+void Game::DrawCenteredTextLine(std::string_view text, float centerX, float y, unsigned int size, sf::Color color)
+{
+    if (!m_hasFont)
+        return;
+
+    sf::Text label(m_font, std::string(text), size);
+    label.setFillColor(color);
+
+    const sf::FloatRect bounds = label.getLocalBounds();
+    label.setPosition({centerX - (bounds.position.x + bounds.size.x * 0.5f), y});
     m_window.draw(label);
 }
 
