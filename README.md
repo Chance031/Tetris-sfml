@@ -36,3 +36,11 @@ SFML로 다시 만드는 C++ 테트리스 프로젝트입니다.
 | T-Spin Triple | 1600 × 레벨 |
 | Back-to-Back 보너스 | 위 점수의 +50% |
 | 콤보 보너스 | 50 × 콤보 수 × 레벨 |
+
+---
+
+## 관련 프로젝트
+
+| 레포 | 설명 |
+|---|---|
+| [Tetris-cpp](https://github.com/Chance031/Tetris-cpp) | 콘솔 C++ 버전 |
