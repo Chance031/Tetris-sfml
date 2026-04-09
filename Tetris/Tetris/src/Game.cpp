@@ -431,6 +431,7 @@ void Game::ProcessLockAndResolve()
     m_board.LockPiece(m_currentPiece);
 
     const int clearedLines = m_board.ClearLines();
+    const bool isDifficultLineClear = (clearedLines == 4) || (isTSpin && clearedLines > 0);
 
     if (isTSpin && clearedLines == 0)
     {
@@ -445,7 +446,6 @@ void Game::ProcessLockAndResolve()
     if (clearedLines > 0)
     {
         const int lineClearScore = isTSpin ? CalculateTSpinScore(clearedLines) : CalculateScore(clearedLines);
-        const bool isDifficultClear = (clearedLines == 4) || isTSpin;
         const char* clearNames[] = {"", "Single", "Double", "Triple", "Tetris"};
 
         m_lastClearMessage = isTSpin
@@ -457,7 +457,7 @@ void Game::ProcessLockAndResolve()
         m_score += lineClearScore;
         m_score += m_combo * ComboScorePerStep * m_level;
 
-        if (isDifficultClear)
+        if (isDifficultLineClear)
         {
             if (m_isBackToBackActive)
                 m_score += lineClearScore / 2;
@@ -475,6 +475,10 @@ void Game::ProcessLockAndResolve()
     {
         m_combo = -1;
     }
+
+    // Guideline behavior: a no-line T-Spin preserves the current B2B chain,
+    // but it does not start a new one by itself. Other no-line placements
+    // also leave the chain untouched.
 
     m_isLockRequired = false;
     ResetLockDelay();
