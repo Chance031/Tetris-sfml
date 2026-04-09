@@ -84,7 +84,6 @@ private:
     static constexpr int SoftDropScorePerCell = 1;
     static constexpr int HardDropScorePerCell = 2;
     static constexpr int ComboScorePerStep = 50;
-    static constexpr int ClearFlashDurationMs = 120;
     static constexpr int TSpinNoLineScore = 400;
     static constexpr int TSpinSingleScore = 800;
     static constexpr int TSpinDoubleScore = 1200;
@@ -132,11 +131,9 @@ private:
     sf::Clock m_lockClock;
     sf::Clock m_horizontalInputClock;
     sf::Clock m_softDropClock;
-    sf::Clock m_clearFlashClock;
     sf::Time m_fallInterval;
 
     std::mt19937 m_randomEngine;
     std::vector<TetrominoType> m_pieceBag;
     bool m_isWindowTitleDirty = true;
-    bool m_isClearFlashActive = false;
 };
